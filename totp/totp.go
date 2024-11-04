@@ -3,7 +3,6 @@ package totp
 import (
 	"github.com/parsidev/otp"
 	"github.com/parsidev/otp/hotp"
-	"github.com/parsidev/otp/internal/cache"
 	"math"
 	"time"
 )
@@ -30,19 +29,24 @@ func GenerateCode(secret string, t time.Time) (string, error) {
 	})
 }
 
+func GenerateCustomWithExpire(secret string, t time.Time, opts ValidateOpts) (passcode string, exp time.Time, err error) {
+	if passcode, err = GenerateCodeCustom(secret, t, opts); err != nil {
+		return "", time.Time{}, err
+	}
+
+	exp = time.Now().Add(time.Duration(opts.Period) * time.Second)
+
+	exp = time.Date(exp.Year(), exp.Month(), exp.Day(), exp.Hour(), exp.Minute(), 0, 0, exp.Location())
+
+	return passcode, exp, nil
+}
+
 func GenerateCodeCustom(secret string, t time.Time, opts ValidateOpts) (passcode string, err error) {
 	if opts.Period == 0 {
 		opts.Period = 30
 	}
 
-	counter := cache.Get(secret)
-
-	if counter == 0 {
-		counter = uint64(math.Floor(float64(t.Unix()) / float64(opts.Period)))
-	} else {
-		counter++
-		cache.Set(secret, counter)
-	}
+	counter := uint64(math.Floor(float64(t.Unix()) / float64(opts.Period)))
 
 	passcode, err = hotp.GenerateCodeCustom(secret, counter, hotp.ValidateOpts{
 		Digits:    opts.Digits,

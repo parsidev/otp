@@ -17,7 +17,7 @@ func Validate(passcode string, counter uint64, secret string) bool {
 		secret,
 		ValidateOpts{
 			Digits:    otp.DigitsSix,
-			Algorithm: otp.AlgorithmSHA1,
+			Algorithm: otp.AlgorithmSHA256,
 		},
 	)
 	return rv
@@ -26,7 +26,7 @@ func Validate(passcode string, counter uint64, secret string) bool {
 func GenerateCode(secret string, counter uint64) (string, error) {
 	return GenerateCodeCustom(secret, counter, ValidateOpts{
 		Digits:    otp.DigitsSix,
-		Algorithm: otp.AlgorithmSHA1,
+		Algorithm: otp.AlgorithmSHA256,
 	})
 }
 

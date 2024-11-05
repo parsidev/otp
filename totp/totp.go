@@ -75,6 +75,9 @@ func ValidateCustom(passcode string, secret string, t time.Time, opts ValidateOp
 		opts.Period = 30
 	}
 
+	periodCounter := uint64(t.Unix() / int64(opts.Period))
+	t = time.Unix(int64(periodCounter*uint64(opts.Period)), 0)
+
 	counter := uint64(math.Floor(float64(t.Unix()) / float64(opts.Period)))
 
 	rv, err := hotp.ValidateCustom(passcode, counter, secret, hotp.ValidateOpts{
